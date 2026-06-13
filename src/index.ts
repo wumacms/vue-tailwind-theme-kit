@@ -22,4 +22,5 @@ export const themePlugin = {
 };
 
 export { useTheme } from './composables/useTheme';
+export { defaultThemes } from './themes';
 export type { ThemeConfig, ThemeColors, PluginOptions } from './types';
