@@ -4,7 +4,7 @@
 
 ## 特性
 
-* 🎨 **动态全套主题切换**：内置包含 `theme`（默认样式）、`claude`、`twitter` 和 `vercel` 四套精美预设。
+* 🎨 **动态全套主题切换**：内置包含 `theme`（默认样式）、`claude`、`twitter`、`vercel` 以及包括 `amber_minimal`、`catppuccin`、`cyberpunk` 等在内的 40+ 套精美预设。
 * 🌓 **全属性映射**：通过 Tailwind CSS 预设自动扩展 `colors`（如 `background`、`foreground`、`primary`、`secondary`、`card`、`sidebar`、`muted` 等）、`borderRadius`、`fontFamily` 变量。
 * 🌓 **暗色模式切换**：支持手动切换、显式设置以及自动跟随系统偏好（`prefers-color-scheme`）。
 * ⚡ **SSR 安全设计**：使用 Vue `provide` / `inject` 进行应用级状态隔离，完全规避多请求下的跨请求状态污染，对 Nuxt 3 友好。
@@ -16,6 +16,8 @@
 ## 安装
 
 ```bash
+pnpm add @zeldafox/vue-tailwind-theme-kit
+# 或
 npm install @zeldafox/vue-tailwind-theme-kit
 ```
 
@@ -54,7 +56,7 @@ import './assets/main.css';
 const app = createApp(App);
 
 app.use(themePlugin, {
-  defaultTheme: 'theme', // 默认内置主题，可选 'theme' | 'claude' | 'twitter' | 'vercel'
+  defaultTheme: 'theme', // 默认内置主题，支持 theme、claude、twitter、vercel 等 40+ 种内置主题
   // defaultDark: false, // 是否默认启用暗色模式。若不填则自动感应系统深浅色偏好
 });
 
@@ -224,11 +226,15 @@ app.use(themePlugin, {
 
 1. 安装依赖：
    ```bash
-   npm install
+   pnpm install
    ```
-2. 执行编译：
+2. 运行本地开发与预览服务器：
    ```bash
-   npm run build
+   pnpm dev
+   ```
+3. 执行编译：
+   ```bash
+   pnpm build
    ```
    该指令将使用 Vite 打包并将包编译生成到 `dist/` 文件夹下，包含 `index.es.js`, `index.umd.js` 以及 TypeScript 定义文件 `index.d.ts`。
 

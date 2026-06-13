@@ -14,7 +14,7 @@
       <div class="flex items-center gap-4">
         <!-- System info indicator -->
         <span class="text-xs font-mono px-2 py-1 rounded bg-muted text-muted-foreground">
-          v1.0.0
+          v1.1.0
         </span>
       </div>
     </header>
@@ -40,21 +40,114 @@
             </div>
           </div>
 
-          <div class="space-y-2">
-            <h3 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">快捷切换主题</h3>
-            <div class="grid grid-cols-1 gap-2">
-              <button
-                v-for="name in ['theme', 'claude', 'twitter', 'vercel']"
-                :key="name"
-                @click="setTheme(name)"
-                class="w-full text-left px-3 py-2 rounded-lg text-sm transition flex items-center justify-between border"
-                :class="theme === name 
-                  ? 'bg-primary text-primary-foreground border-primary font-bold shadow-md' 
-                  : 'bg-card text-foreground border-border hover:bg-muted'"
+          <div class="space-y-2 relative" ref="dropdownRef">
+            <h3 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">选择内置主题</h3>
+            
+            <!-- Custom Dropdown Trigger -->
+            <button
+              type="button"
+              @click="toggleDropdown"
+              class="w-full px-3 py-2 bg-input hover:bg-input/80 border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200 capitalize font-semibold shadow-sm flex items-center justify-between gap-2"
+            >
+              <div class="flex items-center gap-3 truncate">
+                <!-- Color dots stack on the left -->
+                <div class="flex items-center -space-x-1.5 overflow-hidden flex-shrink-0">
+                  <div 
+                    class="w-3.5 h-3.5 rounded-full border border-card shadow-sm transition-colors duration-300"
+                    :style="{ backgroundColor: getThemeColor(activeTheme, 'primary') }"
+                    title="Primary"
+                  ></div>
+                  <div 
+                    class="w-3.5 h-3.5 rounded-full border border-card shadow-sm transition-colors duration-300"
+                    :style="{ backgroundColor: getThemeColor(activeTheme, 'secondary') }"
+                    title="Secondary"
+                  ></div>
+                  <div 
+                    class="w-3.5 h-3.5 rounded-full border border-card shadow-sm transition-colors duration-300"
+                    :style="{ backgroundColor: getThemeColor(activeTheme, 'accent') }"
+                    title="Accent"
+                  ></div>
+                </div>
+                <span class="truncate">{{ activeTheme === 'theme' ? 'Default (Theme)' : activeTheme.replace(/_/g, ' ') }}</span>
+              </div>
+              
+              <!-- Chevron Icon -->
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 20 20" 
+                fill="currentColor" 
+                class="w-4 h-4 text-muted-foreground transition-transform duration-200 flex-shrink-0"
+                :class="{ 'rotate-180': isOpen }"
               >
-                <span class="capitalize">{{ name === 'theme' ? 'Default (Theme)' : name }}</span>
-                <span v-if="theme === name" class="w-1.5 h-1.5 rounded-full bg-primary-foreground"></span>
-              </button>
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+
+            <!-- Dropdown Popover Panel -->
+            <div
+              v-show="isOpen"
+              class="absolute z-[100] left-0 right-0 mt-1.5 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl overflow-hidden flex flex-col transition-all duration-150 origin-top"
+            >
+              <!-- Search Bar -->
+              <div class="p-2 border-b border-border flex items-center gap-1.5 bg-muted/30">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-muted-foreground flex-shrink-0 ml-1.5">
+                  <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                </svg>
+                <input
+                  type="text"
+                  v-model="searchQuery"
+                  placeholder="搜索主题..."
+                  class="w-full bg-transparent text-xs py-1.5 px-1 text-foreground focus:outline-none placeholder-muted-foreground font-medium"
+                  @keydown.esc="isOpen = false"
+                />
+              </div>
+
+              <!-- Theme List -->
+              <div class="overflow-y-auto max-h-[320px] py-1 custom-scrollbar">
+                <div
+                  v-for="name in filteredThemes"
+                  :key="name"
+                  @click="selectTheme(name)"
+                  class="px-3 py-2 text-xs flex items-center justify-between cursor-pointer transition-colors duration-150 capitalize font-medium"
+                  :class="[
+                    name === activeTheme 
+                      ? 'bg-primary/10 text-primary font-semibold' 
+                      : 'text-foreground hover:bg-muted/50'
+                  ]"
+                >
+                  <div class="flex items-center gap-3 truncate">
+                    <!-- Color dots on the left -->
+                    <div class="flex items-center -space-x-1.5 flex-shrink-0">
+                      <div 
+                        class="w-3 h-3 rounded-full border border-card shadow-sm"
+                        :style="{ backgroundColor: getThemeColor(name, 'primary') }"
+                      ></div>
+                      <div 
+                        class="w-3 h-3 rounded-full border border-card shadow-sm"
+                        :style="{ backgroundColor: getThemeColor(name, 'secondary') }"
+                      ></div>
+                      <div 
+                        class="w-3 h-3 rounded-full border border-card shadow-sm"
+                        :style="{ backgroundColor: getThemeColor(name, 'accent') }"
+                      ></div>
+                    </div>
+                    <span class="truncate">{{ name === 'theme' ? 'Default (Theme)' : name.replace(/_/g, ' ') }}</span>
+                  </div>
+                  <!-- Checkmark for active -->
+                  <svg 
+                    v-if="name === activeTheme"
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor" 
+                    class="w-3.5 h-3.5 text-primary flex-shrink-0 ml-2"
+                  >
+                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div v-if="filteredThemes.length === 0" class="px-4 py-6 text-center text-xs text-muted-foreground">
+                  未找到匹配的主题 😢
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -173,11 +266,83 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useTheme } from '../src/index';
+import { defaultThemes } from '../src/themes/index';
 
 const { theme, isDark, setTheme, toggleDarkMode } = useTheme();
+
+// Sort themes alphabetically, but make sure the default 'theme' is always first
+const availableThemes = Object.keys(defaultThemes).sort((a, b) => {
+  if (a === 'theme') return -1;
+  if (b === 'theme') return 1;
+  return a.localeCompare(b);
+});
+const activeTheme = ref(theme.value);
+
+// Dropdown state
+const isOpen = ref(false);
+const searchQuery = ref('');
+const dropdownRef = ref<HTMLElement | null>(null);
+
+function toggleDropdown() {
+  isOpen.value = !isOpen.value;
+  if (isOpen.value) {
+    searchQuery.value = '';
+    // Focus search input on next tick
+    setTimeout(() => {
+      const searchInput = dropdownRef.value?.querySelector('input');
+      searchInput?.focus();
+    }, 50);
+  }
+}
+
+function selectTheme(name: string) {
+  activeTheme.value = name;
+  setTheme(name);
+  isOpen.value = false;
+}
+
+function handleOutsideClick(event: MouseEvent) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    isOpen.value = false;
+  }
+}
+
+function getThemeColor(themeName: string, type: 'primary' | 'secondary' | 'accent'): string {
+  const themeData = defaultThemes[themeName];
+  if (!themeData) return 'transparent';
+  const modeData = isDark.value ? themeData.dark : themeData.light;
+  return modeData[type] || 'transparent';
+}
+
+const filteredThemes = computed(() => {
+  if (!searchQuery.value) return availableThemes;
+  const q = searchQuery.value.toLowerCase().replace(/_/g, ' ');
+  return availableThemes.filter(name => 
+    name.toLowerCase().replace(/_/g, ' ').includes(q)
+  );
+});
+
+watch(theme, (newTheme) => {
+  activeTheme.value = newTheme;
+});
+
+// Removed getThemeEmoji to prevent duplicate and redundant emoji color indicators.
 </script>
 
 <style scoped>
-/* 可根据需求微调 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
 </style>
