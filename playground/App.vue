@@ -16,26 +16,41 @@
         <span class="text-xs font-mono px-2 py-1 rounded bg-muted text-muted-foreground">
           v1.1.0
         </span>
+        <!-- Mode Toggle -->
+        <button
+          @click="toggleDarkMode"
+          class="p-2 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center justify-center shadow-sm"
+          :title="isDark ? '切换到浅色模式' : '切换到深色模式'"
+        >
+          <Sun v-if="isDark" class="w-4 h-4" />
+          <Moon v-else class="w-4 h-4" />
+        </button>
       </div>
     </header>
 
     <!-- Content Area -->
     <div class="flex-1 flex flex-col md:flex-row">
       <!-- Sidebar -->
-      <aside class="w-full md:w-64 bg-card/30 border-r border-border p-6 space-y-6 flex flex-col justify-between">
+      <aside class="w-full md:w-64 bg-card/30 border-r border-border p-6 space-y-6 flex flex-col">
         <div class="space-y-6">
           <div class="space-y-2">
             <h3 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">当前主题状态</h3>
             <div class="p-4 rounded-xl bg-card border border-border shadow-sm space-y-3">
               <div>
-                <p class="text-xs text-muted-foreground">主题名称</p>
-                <p class="text-sm font-bold text-primary capitalize">{{ theme }}</p>
+                <p class="text-xs text-muted-foreground mb-1.5">主题名称</p>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground shadow-sm capitalize">
+                  {{ theme.replace(/_/g, ' ') }}
+                </span>
               </div>
               <div>
                 <p class="text-xs text-muted-foreground">外观模式</p>
-                <p class="text-sm font-bold text-foreground">
-                  {{ isDark ? '深色模式 🌙' : '浅色模式 ☀️' }}
-                </p>
+                <div class="flex items-center gap-2 mt-1">
+                  <Moon v-if="isDark" class="w-4 h-4 text-foreground" />
+                  <Sun v-else class="w-4 h-4 text-foreground" />
+                  <span class="text-sm font-bold text-foreground">
+                    {{ isDark ? '深色模式' : '浅色模式' }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -53,17 +68,17 @@
                 <!-- Color dots stack on the left -->
                 <div class="flex items-center -space-x-1.5 overflow-hidden flex-shrink-0">
                   <div 
-                    class="w-3.5 h-3.5 rounded-full border border-card shadow-sm transition-colors duration-300"
+                    class="w-3.5 h-3.5 rounded-full border border-foreground/20 shadow-sm transition-colors duration-300"
                     :style="{ backgroundColor: getThemeColor(activeTheme, 'primary') }"
                     title="Primary"
                   ></div>
                   <div 
-                    class="w-3.5 h-3.5 rounded-full border border-card shadow-sm transition-colors duration-300"
+                    class="w-3.5 h-3.5 rounded-full border border-foreground/20 shadow-sm transition-colors duration-300"
                     :style="{ backgroundColor: getThemeColor(activeTheme, 'secondary') }"
                     title="Secondary"
                   ></div>
                   <div 
-                    class="w-3.5 h-3.5 rounded-full border border-card shadow-sm transition-colors duration-300"
+                    class="w-3.5 h-3.5 rounded-full border border-foreground/20 shadow-sm transition-colors duration-300"
                     :style="{ backgroundColor: getThemeColor(activeTheme, 'accent') }"
                     title="Accent"
                   ></div>
@@ -86,7 +101,7 @@
             <!-- Dropdown Popover Panel -->
             <div
               v-show="isOpen"
-              class="absolute z-[100] left-0 right-0 mt-1.5 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl overflow-hidden flex flex-col transition-all duration-150 origin-top"
+              class="absolute z-[100] left-0 right-0 mt-1.5 bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-xl overflow-hidden flex flex-col transition-all duration-150 origin-top"
             >
               <!-- Search Bar -->
               <div class="p-2 border-b border-border flex items-center gap-1.5 bg-muted/30">
@@ -97,7 +112,7 @@
                   type="text"
                   v-model="searchQuery"
                   placeholder="搜索主题..."
-                  class="w-full bg-transparent text-xs py-1.5 px-1 text-foreground focus:outline-none placeholder-muted-foreground font-medium"
+                  class="w-full bg-transparent text-xs py-1.5 px-1 text-popover-foreground focus:outline-none placeholder:text-muted-foreground font-medium"
                   @keydown.esc="isOpen = false"
                 />
               </div>
@@ -111,23 +126,23 @@
                   class="px-3 py-2 text-xs flex items-center justify-between cursor-pointer transition-colors duration-150 capitalize font-medium"
                   :class="[
                     name === activeTheme 
-                      ? 'bg-primary/10 text-primary font-semibold' 
-                      : 'text-foreground hover:bg-muted/50'
+                      ? 'bg-primary text-primary-foreground font-semibold' 
+                      : 'text-popover-foreground hover:bg-muted/50'
                   ]"
                 >
                   <div class="flex items-center gap-3 truncate">
                     <!-- Color dots on the left -->
                     <div class="flex items-center -space-x-1.5 flex-shrink-0">
                       <div 
-                        class="w-3 h-3 rounded-full border border-card shadow-sm"
+                        class="w-3 h-3 rounded-full border border-foreground/20 shadow-sm"
                         :style="{ backgroundColor: getThemeColor(name, 'primary') }"
                       ></div>
                       <div 
-                        class="w-3 h-3 rounded-full border border-card shadow-sm"
+                        class="w-3 h-3 rounded-full border border-foreground/20 shadow-sm"
                         :style="{ backgroundColor: getThemeColor(name, 'secondary') }"
                       ></div>
                       <div 
-                        class="w-3 h-3 rounded-full border border-card shadow-sm"
+                        class="w-3 h-3 rounded-full border border-foreground/20 shadow-sm"
                         :style="{ backgroundColor: getThemeColor(name, 'accent') }"
                       ></div>
                     </div>
@@ -139,28 +154,20 @@
                     xmlns="http://www.w3.org/2000/svg" 
                     viewBox="0 0 20 20" 
                     fill="currentColor" 
-                    class="w-3.5 h-3.5 text-primary flex-shrink-0 ml-2"
+                    class="w-3.5 h-3.5 text-primary-foreground flex-shrink-0 ml-2"
                   >
                     <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
                   </svg>
                 </div>
-                <div v-if="filteredThemes.length === 0" class="px-4 py-6 text-center text-xs text-muted-foreground">
-                  未找到匹配的主题 😢
+                <div v-if="filteredThemes.length === 0" class="px-4 py-6 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+                  <Frown class="w-8 h-8 text-muted-foreground/60" />
+                  <span>未找到匹配的主题</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Mode Toggle -->
-        <div class="pt-4 border-t border-border">
-          <button
-            @click="toggleDarkMode"
-            class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition border bg-primary text-primary-foreground border-primary hover:opacity-90 flex items-center justify-center gap-2 shadow-sm"
-          >
-            <span>切换 {{ isDark ? '浅色模式 ☀️' : '深色模式 🌙' }}</span>
-          </button>
-        </div>
       </aside>
 
       <!-- Main Panel -->
@@ -177,10 +184,12 @@
             </p>
             <div class="flex flex-wrap gap-3 pt-2">
               <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted text-muted-foreground border border-border">
-                🎨 字体族：<span class="font-bold font-mono">Sans-Serif</span>
+                <Palette class="w-3.5 h-3.5 text-muted-foreground" />
+                <span>字体族：<span class="font-bold font-mono">Sans-Serif</span></span>
               </span>
               <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted text-muted-foreground border border-border">
-                📐 圆角值：<span class="font-bold font-mono">var(--theme-radius)</span>
+                <Ruler class="w-3.5 h-3.5 text-muted-foreground" />
+                <span>圆角值：<span class="font-bold font-mono">var(--theme-radius)</span></span>
               </span>
             </div>
           </div>
@@ -230,11 +239,19 @@
             <h3 class="text-lg font-bold text-foreground">表单表意设计</h3>
             <div class="space-y-3">
               <div>
+                <label class="block text-xs font-semibold text-muted-foreground mb-1">带占位符的输入框</label>
+                <input 
+                  type="text" 
+                  placeholder="这是一个带有主题色占位符的输入框..."
+                  class="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground transition"
+                />
+              </div>
+              <div>
                 <label class="block text-xs font-semibold text-muted-foreground mb-1">文本输入框 (bg-input/border-border)</label>
                 <input 
                   type="text" 
                   value="点击测试输入框焦点状态"
-                  class="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition"
+                  class="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground transition"
                 />
               </div>
               <div>
@@ -267,6 +284,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
+import { Moon, Sun, Frown, Palette, Ruler } from '@lucide/vue';
 import { useTheme } from '../src/index';
 import { defaultThemes } from '../src/themes/index';
 

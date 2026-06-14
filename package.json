@@ -26,6 +26,7 @@
     "vue": "^3.0.0"
   },
   "devDependencies": {
+    "@lucide/vue": "^1.18.0",
     "@types/node": "^20.0.0",
     "@vitejs/plugin-vue": "^5.0.0",
     "autoprefixer": "^10.0.0",
